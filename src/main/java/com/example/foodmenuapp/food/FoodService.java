@@ -31,8 +31,23 @@ public class FoodService {
     }
 
     public Food createFood(Food food) {
+        if (food.category() == null) {
+            food = food.withCategory(calculateCategory(food.name()));
+        }
         return foodRepository.save(food);
     }
+
+    private String calculateCategory(String name) {
+        return webClient.post()
+                .bodyValue(new ChatGPTRequest("categories: [vegan, vegetarisch, Hausmannskost, Asiatisch, Nudel, Fisch, Spanisch, Deutsch, Mediterran]; output: best fitting category as string; outputformat: ${category}; input: " + name))
+                .retrieve()
+                .toEntity(ChatGPTResponse.class)
+                .block()
+                .getBody()
+                .text();
+    }
+
+
 
     public Food updateFood(Food food) {
         return foodRepository.save(food);
